@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Proofsheet is a free, in-browser photo culling tool. Group similar shots, grade focus and exposure, and keep the best. No sign-up, and your photos never leave your device.">
+<meta name="theme-color" content="#14111A">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Ccircle cx='24' cy='24' r='22' fill='%235B2D9B'/%3E%3Ccircle cx='24' cy='24' r='11' fill='%23fff'/%3E%3Ccircle cx='24' cy='24' r='5' fill='%235B2D9B'/%3E%3C/svg%3E">
+<title>Proofsheet — Photo Culling</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Special+Elite&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<noscript><p style="font:600 18px sans-serif;padding:24px">Proofsheet needs JavaScript to analyze and sort your photos. Please enable it and reload.</p></noscript>
+
+<main id="screen-intro" class="screen active" aria-labelledby="intro-title">
+  <div class="intro-inner">
+    <div class="logo-row">
+      <svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="22" style="fill:var(--brand)"/><circle cx="24" cy="24" r="11" fill="#fff"/><circle cx="24" cy="24" r="5" style="fill:var(--brand)"/><circle cx="35" cy="12" r="3" style="fill:var(--accent)"/></svg>
+      <span class="logo-word">Proofsheet</span>
+    </div>
+    <h1 id="intro-title">Cull your shoot in minutes,<br><span>not hours.</span></h1>
+    <p class="lead">Drop in a gallery and Proofsheet sorts look‑alike shots into sets, grades focus and exposure, and helps you keep only the best.</p>
+
+    <div class="steps">
+      <div class="step"><div class="num n1">1</div><h3>Drop in your photos</h3><p>JPEG or RAW, straight off the card. Nothing gets uploaded.</p></div>
+      <div class="step"><div class="num n2">2</div><h3>Flick through sets</h3><p>← → moves within a set of similar shots. ↑ ↓ jumps to the next set.</p></div>
+      <div class="step"><div class="num n3">3</div><h3>Keep the best</h3><p>Keep, reject, rate and tag, then save your keepers into a fresh folder.</p></div>
+    </div>
+
+    <div class="cta">
+      <button class="btn primary big" id="btn-start">Start culling</button>
+      <button class="btn ghost big" id="btn-continue">Continue last project</button>
+    </div>
+    <button class="linkbtn" id="btn-start-folder">or choose a whole folder</button>
+    <p class="cta-note" id="continue-note"></p>
+    <div class="privacy">Runs on your device · no sign‑up · your photos never leave this device</div>
+  </div>
+</main>
+
+<main id="screen-arena" class="screen" aria-label="Culling arena">
+  <header class="topbar card">
+    <button class="brand" id="btn-home" title="Back to start" aria-label="Back to the start screen">
+      <svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="22" style="fill:var(--brand)"/><circle cx="24" cy="24" r="11" fill="#fff"/><circle cx="24" cy="24" r="5" style="fill:var(--brand)"/></svg>
+      <span class="brand-text">Proofsheet</span>
+    </button>
+    <div class="chips">
+      <span class="chip"><b id="st-total">0</b> photos</span>
+      <span class="chip keep-chip"><b id="st-picks">0</b> kept</span>
+      <span class="chip nope-chip"><b id="st-rejects">0</b> rejected</span>
+      <span class="chip saved" id="saved-chip" hidden>● Saved</span>
+    </div>
+    <div class="seg" role="group" aria-label="Which photos to show">
+      <button data-f="all" class="on">All</button>
+      <button data-f="pick">Kept</button>
+      <button data-f="reject">Rejected</button>
+      <button data-f="best">Best</button>
+    </div>
+    <span class="spacer"></span>
+    <button class="btn sm" id="btn-tools" aria-expanded="false" aria-controls="tools-pop" title="Filters &amp; tools" aria-label="Filters and tools">Tools</button>
+    <button class="btn sm" id="btn-autocull" title="Keep the best of each set and reject the weakest">Auto-cull</button>
+    <button class="btn sm primary" id="btn-folder" title="Export your kept photos into a new folder">Export Picks</button>
+  </header>
+
+  <section class="photobar card" id="photobar" aria-label="This photo">
+    <div class="pb-where"><div class="pb-set" id="pb-set">Set 1</div><div class="pb-name" id="pb-name">—</div></div>
+    <button class="act keep" id="act-keep" title="Keep (P)">Keep</button>
+    <button class="act nope" id="act-reject" title="Reject (X)">Reject</button>
+    <div class="stars" id="pb-stars" role="group" aria-label="Star rating"></div>
+    <div class="dots" id="pb-colors" role="group" aria-label="Color tag"></div>
+    <input class="subj" id="pb-subject" placeholder="Who's in it?" maxlength="60" autocomplete="off" aria-label="Subject name">
+    <div class="scores"><span class="score-chip focus" id="pb-focus" title="Focus score out of 10">Focus –</span><span class="score-chip" id="pb-score" title="Overall grade">Score –</span></div>
+  </section>
+
+  <div class="stage-wrap">
+    <div class="stage" id="stage">
+      <div class="stage-zoom" id="stage-zoom"><img id="stage-img" alt="" draggable="false"></div>
+      <div class="st-badges" id="st-badges"></div>
+      <div class="st-tools"><button class="round" id="btn-rot-l" title="Rotate left (Shift+R)" aria-label="Rotate left">↶</button><button class="round" id="btn-rot-r" title="Rotate right (R)" aria-label="Rotate right">↷</button><button class="round" id="btn-cmp-toggle" title="Add to compare (C)" aria-label="Add to compare">⊞</button></div>
+      <button class="nav-btn nav-l" id="nav-l" aria-label="Previous photo in this set">←</button>
+      <button class="nav-btn nav-r" id="nav-r" aria-label="Next photo in this set">→</button>
+      <button class="nav-btn nav-u" id="nav-u" aria-label="Previous set">↑</button>
+      <button class="nav-btn nav-d" id="nav-d" aria-label="Next set">↓</button>
+      <div class="st-hint"><kbd>←</kbd><kbd>→</kbd> in set · <kbd>↑</kbd><kbd>↓</kbd> next set · <kbd>P</kbd> keep · <kbd>X</kbd> reject · <kbd>R</kbd> rotate · click to zoom</div>
+      <div class="st-empty" id="st-empty" hidden>
+        <h3>Nothing matches these filters</h3>
+        <p>Try loosening them to see your photos again.</p>
+        <button class="btn primary" id="btn-showall">Show everything</button>
+      </div>
+    </div>
+  </div>
+
+  <section class="strip card" id="strip" aria-label="All sets of photos"></section>
+</main>
+
+<div class="popover" id="tools-pop" role="dialog" aria-label="Filters and tools">
+  <div class="pop-grid">
+    <section>
+      <h4>Show only…</h4>
+      <div class="pop-row"><span class="lbl">Stars at least</span><div class="stars-f" id="f-stars" role="group" aria-label="Minimum stars"></div></div>
+      <div class="pop-row"><span class="lbl">Color tag</span><div class="clrs-f" id="f-clrs" role="group" aria-label="Color tag filter"></div></div>
+      <div class="pop-row"><span class="lbl">Subject</span><select id="f-subj" aria-label="Subject filter"><option value="">All</option></select></div>
+    </section>
+    <section>
+      <h4>While you cull</h4>
+      <div class="pop-row"><label class="switch"><input type="checkbox" id="opt-advance" checked><span>Jump ahead after Keep / Reject</span></label></div>
+      <div class="pop-row"><span class="lbl">Import speed</span>
+        <select id="speed-select" aria-label="Import speed">
+          <option value="auto">Auto</option><option value="fast">Fast</option><option value="balanced">Balanced</option><option value="gentle">Gentle</option>
+        </select></div>
+    </section>
+    <section class="wide">
+      <h4>Smart helpers</h4>
+      <div class="pop-btns">
+        <button class="btn soon" disabled aria-disabled="true" title="Coming soon">Detect subjects <span class="soon-tag">Coming soon</span></button>
+        <button class="btn soon" disabled aria-disabled="true" title="Coming soon">AI grade picks <span class="soon-tag">Coming soon</span></button>
+        <button class="btn" id="btn-compare">⊞ Compare</button>
+      </div>
+    </section>
+    <section class="wide">
+      <h4>Your files</h4>
+      <div class="pop-btns">
+        <button class="btn" id="btn-add">Add photos</button>
+        <button class="btn" id="btn-move">Move from folder…</button>
+        <button class="btn" id="btn-export">Export list</button>
+        <button class="btn danger" id="btn-reset">Start over</button>
+      </div>
+    </section>
+  </div>
+</div>
+
+<div class="overlay" id="start-modal" role="dialog" aria-modal="true" aria-labelledby="sm-title" data-step="pick">
+  <div class="modal">
+    <button class="sm-x" id="sm-close" aria-label="Close">✕</button>
+    <div class="sm-step sm-pick">
+      <h2 id="sm-title">Pick your photos</h2>
+      <p>Choose the shots you want to cull. JPEG or RAW.</p>
+      <div class="sm-drop">
+        <p><b>Drag &amp; drop</b> them here, or</p>
+        <div class="sm-btns">
+          <button class="btn primary big" id="sm-files">Choose photos</button>
+          <button class="btn big" id="sm-folder">Choose a folder</button>
+        </div>
+      </div>
+      <p class="sm-fine">Nothing is uploaded. Photos stay on your device.</p>
+    </div>
+    <div class="sm-step sm-review">
+      <h2>Looks good?</h2>
+      <div class="sm-count" id="sm-count">0</div>
+      <p id="sm-count-lbl">photos selected</p>
+      <div class="sm-chips" id="sm-chips"></div>
+      <div class="sm-thumbs" id="sm-thumbs"></div>
+      <div class="sm-actions">
+        <button class="btn primary big" id="sm-confirm">Confirm &amp; start culling</button>
+        <button class="btn ghost big" id="sm-change">Choose different photos</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="import-modal" role="dialog" aria-modal="true" aria-label="Importing your photos" aria-live="polite">
+  <div class="modal">
+    <div class="im-working">
+      <h2>Getting your photos ready</h2>
+      <div class="im-pct"><span id="im-pct">0</span>%</div>
+      <div class="im-bar"><div class="im-fill" id="im-fill"></div></div>
+      <p class="im-lbl" id="im-lbl">Starting…</p>
+      <p class="im-timing" id="im-timing"></p>
+    </div>
+    <div class="im-done">
+      <h2>Ready to review</h2>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="dialog" role="dialog" aria-modal="true" aria-labelledby="dlg-title">
+  <div class="modal">
+    <h2 id="dlg-title"></h2>
+    <p id="dlg-body"></p>
+    <div class="dlg-actions" id="dlg-actions"></div>
+  </div>
+</div>
+
+<div class="overlay" id="compare" role="dialog" aria-modal="true" aria-label="Compare photos">
+  <div class="cmp-shell">
+    <div class="cmp-top"><h2>Compare</h2><span id="cmp-note"></span><span class="spacer"></span><button class="btn sm primary" id="cmp-close">Done</button></div>
+    <div id="cmp-grid"></div>
+  </div>
+</div>
+
+<div id="toast" role="status" aria-live="polite"></div>
+<input type="file" id="file-input" accept="image/*,.cr2,.cr3,.nef,.nrw,.arw,.srf,.sr2,.raf,.orf,.rw2,.dng,.pef,.srw,.raw,.rwl,.3fr,.iiq,.erf,.kdc,.mos,.x3f" multiple hidden>
+<input type="file" id="folder-input" webkitdirectory multiple hidden>
+
+<script src="app.js"></script>
+</body>
+</html>
