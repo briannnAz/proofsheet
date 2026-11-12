@@ -4,7 +4,6 @@ A free, no-sign-up photo-culling tool that runs entirely in your browser. Drop i
 
 It is a small static site (one page, one stylesheet, one script) with no server, no account and no install. Your photos never leave your device.
 
-> **Production edition.** This repo contains the same app with all comments removed. It behaves identically to the annotated edition.
 
 ## Screenshots
 
